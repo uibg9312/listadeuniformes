@@ -69,7 +69,7 @@ self.addEventListener('fetch', event => {
               .then(cache => {
                 // Solo cachear si es una petición a nuestro propio origen o CDN de confianza
                 // Evitar cachear respuestas opacas de terceros que podrían no ser lo que esperamos
-                if (event.request.url.startsWith(self.location.origin) ||
+                if (event.request.url.startsWith(self.location.origin + '/listadeuniformes/') ||
                     event.request.url.includes('googleapis') ||
                     event.request.url.includes('gstatic') ||
                     event.request.url.includes('tailwindcss')) {
