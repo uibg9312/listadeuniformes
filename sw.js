@@ -1,11 +1,9 @@
 const CACHE_NAME = 'uniformes-bethel-cache-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  // No necesitas cachear explícitamente tailwindcss.com ni fonts.googleapis.com si quieres que se actualicen
-  // pero sí los iconos locales que uses para la PWA.
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/organizador-uniformes/', // Ruta base de tu app
+  '/organizador-uniformes/index.html',
+  '/organizador-uniformes/icons/icon-192x192.png',
+  '/organizador-uniformes/icons/icon-512x512.png'
   // Si tuvieras archivos CSS o JS externos propios, los añadirías aquí.
   // Ejemplo: '/styles.css', '/app.js'
 ];
