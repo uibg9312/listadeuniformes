@@ -2,11 +2,11 @@
   "name": "Organizador de Uniformes Bethel",
   "short_name": "Uniformes Bethel",
   "description": "Organizador semanal de uniformes para el Coro Bethel.",
-  "start_url": "/index.html",
+  "start_url": "/listadeuniformes/index.html",
   "display": "standalone",
   "background_color": "#f3f4f6",
   "theme_color": "#3b82f6",
-  "scope": "/",
+  "scope": "/listadeuniformes/",
   "icons": [
     {
       "src": "icons/icon-192x192.png",
