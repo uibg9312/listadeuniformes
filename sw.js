@@ -1,9 +1,9 @@
 const CACHE_NAME = 'uniformes-bethel-cache-v1';
 const urlsToCache = [
-  '/organizador-uniformes/', // Ruta base de tu app
-  '/organizador-uniformes/index.html',
-  '/organizador-uniformes/icons/icon-192x192.png',
-  '/organizador-uniformes/icons/icon-512x512.png'
+  '/listadeuniformes/', // Ruta base de tu app
+  '/listadeuniformes/index.html',
+  '/listadeuniformes/icons/icon-192x192.png',
+  '/listadeuniformes/icons/icon-512x512.png'
   // Si tuvieras archivos CSS o JS externos propios, los añadirías aquí.
   // Ejemplo: '/styles.css', '/app.js'
 ];
