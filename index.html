@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizador de Uniformes Bethel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .uniform-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: transform 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            height: 100%; /* Ensure cards in a row have same height */
+        }
+        .uniform-card:hover {
+            transform: translateY(-3px);
+        }
+        .uniform-card h3 {
+             margin-bottom: 0.75rem;
+             flex-shrink: 0;
+        }
+        .uniform-card-content {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .uniform-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        .uniform-details {
+            font-size: 0.875rem;
+            color: #4b5563;
+            line-height: 1.4;
+        }
+        select, input[type="date"] {
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+            padding: 0.5rem 0.75rem;
+            width: 100%;
+            margin-top: 0.25rem;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+        button.primary-btn { /* Renamed button class */
+            background-color: #3b82f6;
+            color: white;
+            font-weight: 500;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            width: 100%;
+        }
+        button.primary-btn:hover {
+            background-color: #2563eb;
+        }
+        /* Estilos para botones de navegación de vistas */
+        button.view-toggle-btn {
+            background-color: #e5e7eb; /* Gris claro */
+            color: #374151; /* Gris oscuro */
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        button.view-toggle-btn.active {
+            background-color: #3b82f6; /* Azul */
+            color: white;
+            border-color: #3b82f6;
+        }
+        button.view-toggle-btn:not(.active):hover {
+            background-color: #d1d5db; /* Gris medio */
+        }
+
+        #statusMessage {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            text-align: center;
+            min-height: 40px;
+        }
+        .success { background-color: #d1fae5; color: #065f46; }
+        .info { background-color: #e0f2fe; color: #075985; }
+        .warning { background-color: #fef3c7; color: #92400e; }
+        .error { background-color: #fee2e2; color: #991b1b; }
+
+        /* Clase para ocultar elementos */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-2xl md:text-3xl font-bold text-center mb-6 text-gray-800">📅 Organizador de Uniformes del Coro 🎶</h1>
+
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Seleccionar Uniforme de Referencia</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="uniformSelect" class="block text-sm font-medium text-gray-600 mb-1">Uniforme:</label>
+                    <select id="uniformSelect" name="uniformSelect" class="focus:ring-blue-500 focus:border-blue-500"></select>
+                </div>
+                <div>
+                    <label for="uniformDate" class="block text-sm font-medium text-gray-600 mb-1">Fecha en que se usó (Domingo):</label>
+                    <input type="date" id="uniformDate" name="uniformDate" class="focus:ring-blue-500 focus:border-blue-500">
+                </div>
+            </div>
+            <button id="setCurrentUniformBtn" class="primary-btn">Establecer como Referencia</button>
+            <div id="statusMessage"></div>
+        </div>
+
+        <div class="flex justify-center space-x-4 mb-6">
+            <button id="showUpcomingBtn" class="view-toggle-btn active">Ver Próximos Domingos</button>
+            <button id="showFullListBtn" class="view-toggle-btn">Ver Lista Completa</button>
+        </div>
+
+        <div id="upcomingView">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div id="upcoming1Card" class="uniform-card">
+                    <h3 class="text-lg font-semibold text-green-600">🟢 Próximo Domingo</h3>
+                    <div id="upcoming1Info" class="uniform-card-content">
+                        <p class="text-gray-500 italic">Establece un uniforme y fecha de referencia.</p>
+                    </div>
+                </div>
+                <div id="upcoming2Card" class="uniform-card">
+                    <h3 class="text-lg font-semibold text-purple-600">🟣 Siguiente Domingo</h3>
+                    <div id="upcoming2Info" class="uniform-card-content">
+                        <p class="text-gray-500 italic">Establece un uniforme y fecha de referencia.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="fullListView" class="hidden">
+             <h2 class="text-xl font-semibold mb-4 text-gray-700 text-center">Lista Completa de Uniformes</h2>
+             <div id="fullListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                 </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Definición de los Uniformes ---
+        const uniforms = [
+            // { id: 1, name: "...", women: "...", men: "..." }, ... (lista completa)
+            { id: 1, name: "1: Blanco Novia / Smoking Negro", women: "Blanco del Faldon de novia, Chalina Turquesa, Zapatos Negros.", men: "Smoking Negro, Camisa Blanca, Moño Negro, Zapatos Negros." },
+            { id: 2, name: "2: Toga Lila / Traje Gris Claro", women: "Toga Lila, Chalina Gris del escudo, Zapatos Negros.", men: "Traje Gris Claro, Camisa Blanca, Corbata Lila, Zapatos Negros." },
+            { id: 3, name: "3: Ensamble Arena / Traje Arena", women: "Ensamble Arena Hebreo, Chalina Chal, Zapatos Negros.", men: "Traje Arena, Camisa Blanca cuello paloma, Moño Cafe de rayas, Zapatos Camel." },
+            { id: 4, name: "4: Ensamble Hebreo Blanco / Traje Blanco", women: "Ensamble Hebreo Blanco, Chalina Circular, Zapatos Blancos.", men: "Traje Blanco, Camisa Blanca, Corbata Dorada de los escudos, Zapatos Blancos." },
+            { id: 5, name: "5: Ensamble Uva / Traje Uva", women: "Ensamble Morado (Uva), Chalina Uva, Zapatos Negros.", men: "Traje Uva, Camisa Blanca cuello paloma, Moño Uva con negro, Zapatos Negros." },
+            { id: 6, name: "6: Ensamble Rojo / Smoking Negro (Rojo)", women: "Ensamble Rojo, Chalina Dorada Mexicana, Zapatos Dorados.", men: "Smoking Negro, Camisa Blanca cuello paloma, Faja y Moño Rojo, Zapatos Negros." },
+            { id: 7, name: "7: Vestido Azul Marino / Traje Azul Marino", women: "Vestido Azul Marino, Chalina Gris Mexicana, Zapatos Plata.", men: "Traje Azul Marino, Camisa Blanca, Corbata Gris del escudo, Zapatos Negros." },
+            { id: 8, name: "8: Toga Beige-Azul / Traje Azul Petroleo", women: "Toga Beige con azul, Chalina Dorada Mexicana, Zapatos Negros.", men: "Traje Azul Petroleo, Camisa Blanca, Moño y Chaleco Café claro, Zapatos Camel." },
+            { id: 9, name: "9: Toga Blanca (Tinta) / Traje Blanco (Tinta)", women: "Toga Blanca, Estola Blanca, Chalina Tinta, Zapatos Tintos.", men: "Traje Blanco, Camisa Blanca, Corbata Tinta del escudo, Zapatos Negros." },
+            { id: 10, name: "10: Toga Lila (Uva) / Traje Uva (Lila)", women: "Toga Lila, Chalina Uva, Zapatos Negros.", men: "Traje Uva, Camisa Blanca, Corbata Lila, Zapatos Negros." },
+            { id: 11, name: "11: Traje Azul Rey / Traje Azul Petroleo", women: "Traje Azul Rey, Chalina gris de tul azul rey, Zapatos Negros.", men: "Traje Azul Petroleo, Camisa Blanca, Corbata Azul rey del escudo, Zapatos Negros." },
+            { id: 12, name: "12: Ensamble Arena (Dorado) / Traje Negro (Dorado)", women: "Ensamble Hebreo Arena, Chalina Dorada Mexicana, Zapatos Dorados.", men: "Traje Negro, Camisa Blanca, Corbata Dorada de los escudos, Zapatos Negros." },
+            { id: 13, name: "13: Toga Lila (Rosa) / Traje Azul Marino (Lila)", women: "Toga Lila, Chalina Lilarosa, Zapatos Negros.", men: "Traje Azul Marino, Camisa Blanca, Corbata Lila, Zapatos Negros." },
+            { id: 14, name: "14: Saco Blanco-Azul Rey / Traje Azul Petroleo", women: "Saco Blanco, Falda recta Azul Rey, Chalina Azul rey del escudo, Zapatos Negros.", men: "Traje Azul Petroleo, Camisa Blanca, Corbata Azul rey del escudo, Zapatos Negros." },
+            { id: 15, name: "15: Ensamble Uva (Gris) / Traje Uva", women: "Ensamble Morado (Uva), Chalina Gris Mexicana, Zapatos Plata.", men: "Traje Uva, Camisa Blanca cuello paloma, Moño Uva con negro, Zapatos Negros." },
+            { id: 16, name: "16: Ensamble Arena (Tinta) / Traje Negro (Tinta)", women: "Ensamble Hebreo Arena, Chalina Tinta, Zapatos Tintos.", men: "Traje Negro, Camisa blanca, Corbata Tinta, Zapatos Negros." },
+            { id: 17, name: "17: Traje Azul Rey (Dorado) / Traje Azul Petroleo (Dorado)", women: "Traje Azul Rey, Chalina Dorada Mexicana, Zapatos Dorados.", men: "Traje Azul Petroleo, Camisa Blanca, Corbata Dorada de los escudos, Zapatos Negros." }
+        ];
+
+        // --- Elementos del DOM ---
+        const uniformSelect = document.getElementById('uniformSelect');
+        const uniformDateInput = document.getElementById('uniformDate');
+        const setCurrentUniformBtn = document.getElementById('setCurrentUniformBtn');
+        const statusMessageDiv = document.getElementById('statusMessage');
+        // Vistas
+        const upcomingViewDiv = document.getElementById('upcomingView');
+        const fullListViewDiv = document.getElementById('fullListView');
+        // Botones de Vistas
+        const showUpcomingBtn = document.getElementById('showUpcomingBtn');
+        const showFullListBtn = document.getElementById('showFullListBtn');
+        // Contenedores de información
+        const upcoming1InfoDiv = document.getElementById('upcoming1Info');
+        const upcoming2InfoDiv = document.getElementById('upcoming2Info');
+        const fullListContainerDiv = document.getElementById('fullListContainer');
+
+        // --- Constantes ---
+        const MS_PER_DAY = 1000 * 60 * 60 * 24;
+        const MS_PER_WEEK = MS_PER_DAY * 7;
+
+        // --- Funciones ---
+
+        function populateUniformSelect() {
+            uniforms.forEach((uniform, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = uniform.name;
+                uniformSelect.appendChild(option);
+            });
+        }
+
+        function formatDateToInput(date) {
+             const yyyy = date.getFullYear();
+             const mm = String(date.getMonth() + 1).padStart(2, '0');
+             const dd = String(date.getDate()).padStart(2, '0');
+             return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function createUniformCardHTML(uniform, date = null) {
+            let dateString = '';
+            if (date instanceof Date) {
+                try {
+                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                    const displayDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                    dateString = `<p class="text-sm text-gray-500 mb-2">🗓️ Domingo: ${displayDate.toLocaleDateString('es-MX', options)}</p>`; // Cambiado "Semana del" a "Domingo"
+                } catch (e) {
+                    console.error("Error formateando fecha:", e);
+                    dateString = `<p class="text-sm text-red-500 mb-2">🗓️ Fecha inválida</p>`;
+                }
+            }
+
+            if (uniform) {
+                 return `
+                    ${dateString}
+                    <p class="uniform-title"> ${uniform.name}</p>
+                    <div class="uniform-details">
+                        <p><strong>Mujeres:</strong> ${uniform.women}</p>
+                        <p><strong>Hombres:</strong> ${uniform.men}</p>
+                    </div>
+                `;
+            } else {
+                 return `<p class="text-gray-500 italic">Información no disponible.</p>`;
+            }
+        }
+
+        function populateFullListView() {
+            fullListContainerDiv.innerHTML = '';
+            uniforms.forEach(uniform => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'uniform-card';
+                const title = document.createElement('h3');
+                title.className = 'text-lg font-semibold text-gray-700';
+                title.textContent = `Uniforme ${uniform.id}`;
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'uniform-card-content';
+                contentDiv.innerHTML = createUniformCardHTML(uniform);
+                cardDiv.appendChild(title);
+                cardDiv.appendChild(contentDiv);
+                fullListContainerDiv.appendChild(cardDiv);
+            });
+        }
+
+        function showStatusMessage(message, type = 'info') {
+            statusMessageDiv.textContent = message;
+            statusMessageDiv.className = '';
+            statusMessageDiv.classList.add(type);
+
+            if (type !== 'error') {
+                 setTimeout(() => {
+                     if (statusMessageDiv.textContent === message) {
+                         statusMessageDiv.textContent = '';
+                         statusMessageDiv.className = '';
+                     }
+                 }, 5000);
+            }
+        }
+
+        function saveReferenceState(refIndex, refDateString) {
+            localStorage.setItem('referenceUniformIndex', refIndex);
+            localStorage.setItem('referenceUniformDate', refDateString);
+            console.log(`Estado guardado: Índice ${refIndex}, Fecha ${refDateString}`);
+        }
+
+        function getSundayOfWeek(date) {
+            const dateCopy = new Date(date.getTime());
+            const dayOfWeek = dateCopy.getDay();
+            const diff = dateCopy.getDate() - dayOfWeek;
+            return new Date(dateCopy.setDate(diff));
+        }
+
+        // *** FUNCIÓN MODIFICADA ***
+        function loadStateAndCalculate() {
+            const savedIndexStr = localStorage.getItem('referenceUniformIndex');
+            const savedDateStr = localStorage.getItem('referenceUniformDate');
+            let autoUpdateMessage = '';
+
+            if (savedIndexStr !== null && savedDateStr !== null) {
+                const refIndex = parseInt(savedIndexStr, 10);
+                // Asegurarse de que la fecha se interprete como local al inicio del día
+                const refDate = new Date(savedDateStr + 'T00:00:00');
+
+                if (!isNaN(refIndex) && !isNaN(refDate.getTime()) && refIndex >= 0 && refIndex < uniforms.length) {
+
+                    const refSunday = getSundayOfWeek(refDate);
+                    refSunday.setHours(0, 0, 0, 0);
+
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0); // Normalizar hoy a medianoche para comparación
+
+                    const currentActualSunday = getSundayOfWeek(today); // El domingo de la semana en la que estamos hoy
+                    currentActualSunday.setHours(0, 0, 0, 0);
+
+                    let baseIndex = refIndex;
+                    let baseSunday = refSunday; // El domingo que *correspondería* según la referencia
+
+                    // Calcular cuántas semanas han pasado desde la referencia hasta la semana actual
+                    if (currentActualSunday >= refSunday) {
+                        const weeksPassed = Math.round((currentActualSunday.getTime() - refSunday.getTime()) / MS_PER_WEEK);
+                        baseIndex = (refIndex + weeksPassed) % uniforms.length;
+                        baseSunday = currentActualSunday; // Actualizar al domingo de la semana actual
+
+                         if (weeksPassed > 0 && currentActualSunday > refSunday) {
+                             autoUpdateMessage = `🔄 ¡Referencia actualizada al domingo de esta semana!`;
+                         }
+                    }
+                    // Si currentActualSunday < refSunday, la referencia es futura, usamos refIndex y refSunday como base.
+
+                    // *** NUEVA LÓGICA PARA DETERMINAR QUÉ MOSTRAR ***
+                    let displayIndex1;
+                    let displayDate1;
+
+                    // Comparamos el domingo base calculado con el día de hoy (normalizado)
+                    if (baseSunday < today) {
+                        // Si el domingo base ya pasó (es anterior a hoy),
+                        // el primer uniforme a mostrar es el SIGUIENTE al base.
+                        displayIndex1 = (baseIndex + 1) % uniforms.length;
+                        displayDate1 = new Date(baseSunday.getTime() + MS_PER_WEEK); // La fecha es el próximo domingo
+                        if (!autoUpdateMessage) { // Añadir mensaje si no hubo ya uno de actualización
+                           autoUpdateMessage = `ℹ️ Mostrando próximos domingos (el domingo ${baseSunday.toLocaleDateString('es-MX')} ya pasó).`;
+                        }
+                    } else {
+                        // Si el domingo base es hoy o futuro, ese es el primer uniforme a mostrar.
+                        displayIndex1 = baseIndex;
+                        displayDate1 = baseSunday;
+                    }
+
+                    // Calcular el segundo uniforme y fecha a mostrar
+                    const displayIndex2 = (displayIndex1 + 1) % uniforms.length;
+                    const displayDate2 = new Date(displayDate1.getTime() + MS_PER_WEEK);
+
+                    // Actualizar UI de selección (mantener la referencia original visible)
+                    uniformSelect.value = refIndex;
+                    uniformDateInput.value = savedDateStr;
+
+                    // Actualizar las tarjetas de próximos
+                    updateUpcomingDisplays(displayIndex1, displayDate1, displayIndex2, displayDate2);
+
+                    // Mostrar mensaje de estado
+                    if (autoUpdateMessage) {
+                        showStatusMessage(autoUpdateMessage, 'info');
+                    } else {
+                         showStatusMessage('Estado de referencia cargado.', 'info');
+                    }
+
+                } else {
+                    // Manejo de datos guardados inválidos
+                    console.warn("Datos guardados inválidos:", savedIndexStr, savedDateStr);
+                    localStorage.removeItem('referenceUniformIndex');
+                    localStorage.removeItem('referenceUniformDate');
+                    setInitialPlaceholders();
+                }
+            } else {
+                 // Estado inicial sin datos guardados
+                 const today = new Date();
+                 uniformDateInput.value = formatDateToInput(today);
+                 setInitialPlaceholders();
+            }
+        }
+
+
+        function setInitialPlaceholders() {
+            const placeholderText = `<p class="text-gray-500 italic">Establece un uniforme y fecha de referencia.</p>`;
+            upcoming1InfoDiv.innerHTML = placeholderText;
+            upcoming2InfoDiv.innerHTML = placeholderText;
+        }
+
+        function updateUpcomingDisplays(index1, date1, index2, date2) {
+            const uniform1 = uniforms[index1];
+            const uniform2 = uniforms[index2];
+
+            upcoming1InfoDiv.innerHTML = createUniformCardHTML(uniform1, date1);
+            upcoming2InfoDiv.innerHTML = createUniformCardHTML(uniform2, date2);
+        }
+
+        function switchView(viewToShow) {
+            if (viewToShow === 'upcoming') {
+                upcomingViewDiv.classList.remove('hidden');
+                fullListViewDiv.classList.add('hidden');
+                showUpcomingBtn.classList.add('active');
+                showFullListBtn.classList.remove('active');
+            } else if (viewToShow === 'fullList') {
+                upcomingViewDiv.classList.add('hidden');
+                fullListViewDiv.classList.remove('hidden');
+                showUpcomingBtn.classList.remove('active');
+                showFullListBtn.classList.add('active');
+            }
+        }
+
+        // --- Event Listeners ---
+        setCurrentUniformBtn.addEventListener('click', () => {
+            const selectedIndex = parseInt(uniformSelect.value, 10);
+            const selectedDateStr = uniformDateInput.value;
+
+            if (isNaN(selectedIndex)) {
+                showStatusMessage('Por favor, selecciona un uniforme.', 'error'); return;
+            }
+            if (!selectedDateStr) {
+                showStatusMessage('Por favor, selecciona una fecha.', 'error'); return;
+            }
+            const selectedDate = new Date(selectedDateStr + 'T00:00:00');
+             if (isNaN(selectedDate.getTime())) {
+                 showStatusMessage('La fecha seleccionada no es válida.', 'error'); return;
+             }
+             // Ya no es estrictamente necesario que sea domingo, pero la lógica calcula el domingo de esa semana
+             /* if (selectedDate.getDay() !== 0) {
+                 showStatusMessage('Por favor, selecciona un domingo como fecha de referencia.', 'warning');
+                 return;
+             } */
+
+            saveReferenceState(selectedIndex, selectedDateStr);
+            loadStateAndCalculate(); // Recalcula y muestra
+
+            showStatusMessage(`Referencia establecida: Uniforme "${uniforms[selectedIndex].name}" para la semana del ${getSundayOfWeek(selectedDate).toLocaleDateString('es-MX')}.`, 'success');
+             switchView('upcoming');
+        });
+
+        showUpcomingBtn.addEventListener('click', () => switchView('upcoming'));
+        showFullListBtn.addEventListener('click', () => switchView('fullList'));
+
+        // --- Inicialización ---
+        populateUniformSelect();
+        populateFullListView();
+        loadStateAndCalculate();
+        switchView('upcoming');
+
+    </script>
+
+</body>
+</html>
